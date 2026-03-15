@@ -43,7 +43,7 @@ def _clean(k):
 def champion_class_transform(dataframe):
     cwd = Path('.')
     champion_json_path = cwd / "champion.json"
-    with open(champion_json_path, "r") as f:
+    with open(champion_json_path, "r", encoding="utf-8") as f:
         champion_json = json.load(f)
 
     tags_set = set()
@@ -51,8 +51,9 @@ def champion_class_transform(dataframe):
         tags_set.update(set(champion_json["data"][x]["tags"]))
     tags = list(tags_set)
     
+    df = dataframe.copy()
     for tag in tags:
-        dataframe[tag] = dataframe["champion"].apply(lambda k: _is_class(tag, champion_json["data"][_clean(k)]["tags"]))
+        df.loc[:, tag] = df["champion"].apply(lambda k: _is_class(tag, champion_json["data"][_clean(k)]["tags"]))
     
-    dataframe = dataframe.drop(columns=["champion"])
-    return dataframe
+    df = df.drop(columns=["champion"])
+    return df
