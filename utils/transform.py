@@ -86,3 +86,16 @@ def scale_df(df, time_dependent_cols=time_dependent_cols, model=simple_scale_mod
         df_residuals[col] = df[col] - model.predict(df[['gamelength']])
     
     return df_residuals
+
+def aggregate_stats(df, id_col):
+    df = df[df.groupby(id_col)[id_col].transform('count') > 2]
+    
+    g = df.groupby(id_col)
+    
+    res_mean = g.mean().add_suffix('_mean')
+    res_var = g.var().add_suffix('_var')
+    res_quant = g.quantile([0.25, 0.5, 0.75]).unstack()
+    
+    res_quant.columns = [f"{c[0]}_q{int(c[1]*100)}" for c in res_quant.columns]
+    
+    return pd.concat([res_mean, res_var, res_quant], axis=1).reset_index()
