@@ -1,0 +1,87 @@
+import json
+import pandas as pd
+from pathlib import Path
+
+
+def _is_class(k, p):
+    if k in p:
+        return 1
+    else:
+        return 0
+    
+def _clean(k):
+    if "Wukong" in k:
+        return "MonkeyKing"
+    if "K'Sante" in k:
+        return "KSante"
+    if "Kai'Sa" in k:
+        return "Kaisa"
+    if "Renata Glasc" in k:
+        return "Renata"
+    if "Kog'Maw" in k:
+        return "KogMaw"
+    if "LeBlanc" in k:
+        return "Leblanc"
+    if "Nunu & Willump" in k:
+        return "Nunu"
+    if "Dr. Mundo" in k:
+        return "DrMundo"
+    if "Rek'Sai" in k:
+        return "RekSai"
+    else:
+        z = k.split("'")
+        m = [b.lower() for b in z[1:]]
+        z = [z[0]] + m
+
+        return "".join(z).replace(" ", "")
+        #return k.replace("'","").replace(" ", "")
+
+
+# dataframe must have a column called "Champion" with champion names according to oracleelixir
+def champion_class_transform(dataframe):
+    champion_json_path = Path(__file__).parent / "champion.json"
+    with open(champion_json_path, "r") as f:
+        champion_json = json.load(f)
+
+    tags_set = set()
+    for x in champion_json["data"].keys():
+        tags_set.update(set(champion_json["data"][x]["tags"]))
+    tags = list(tags_set)
+    
+    for tag in tags:
+        dataframe[tag] = dataframe["champion"].apply(lambda k: _is_class(tag, champion_json["data"][_clean(k)]["tags"]))
+    
+    dataframe = dataframe.drop(columns=["champion"])
+    return dataframe
+
+def smart_drop_na(df, column_percentage_threshold=0.2, row_percentage_threshold=0):
+    missing_values = df.isna().mean()
+    missing_value_columns = missing_values[missing_values > len(df) * column_percentage_threshold].index
+    df = df.drop(columns=missing_value_columns)
+
+    z = df.isna().sum(axis=1)
+    # Gameid to drop
+    gameids = df[z > len(df.columns) * row_percentage_threshold]["gameid"].unique()
+    df = df[~df["gameid"].isin(gameids)]
+    return df
+
+from utils.constants import most_relevant_columns, pos_order
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import SplineTransformer
+from sklearn.linear_model import Ridge
+
+time_dependent_cols = ["kills", "deaths", "assists", "doublekills", "damagetochampions", "dpm", "damagetowers", "wardsplaced", "visionscore", "totalgold", "minionkills", "monsterkills"]
+time_dependent_cols = [col + f'_{pos}' for col in most_relevant_columns if col != 'gamelength' for pos in pos_order]
+simple_scale_model = make_pipeline(SplineTransformer(n_knots=3, degree=3), Ridge(alpha=1))
+
+def scale_df(df, time_dependent_cols=time_dependent_cols, model=simple_scale_model):
+    df_residuals = pd.DataFrame(index=df.index)
+
+    for col in df.columns:
+        if col not in time_dependent_cols:
+            df_residuals[col] = df[col]
+            continue
+        model.fit(df[['gamelength']], df[col])
+        df_residuals[col] = df[col] - model.predict(df[['gamelength']])
+    
+    return df_residuals
