@@ -51,8 +51,9 @@ def champion_class_transform(dataframe):
         tags_set.update(set(champion_json["data"][x]["tags"]))
     tags = list(tags_set)
     
+    df = dataframe.copy()
     for tag in tags:
-        dataframe[tag] = dataframe["champion"].apply(lambda k: _is_class(tag, champion_json["data"][_clean(k)]["tags"]))
+        df.loc[:, tag] = df["champion"].apply(lambda k: _is_class(tag, champion_json["data"][_clean(k)]["tags"]))
     
-    dataframe = dataframe.drop(columns=["champion"])
-    return dataframe
+    df = df.drop(columns=["champion"])
+    return df
