@@ -38,9 +38,9 @@ def _clean(k):
 
 
 # dataframe must have a column called "Champion" with champion names according to oracleelixir
-def champion_class_transform(dataframe):
+def champion_class_transform(df):
     champion_json_path = Path(__file__).parent / "champion.json"
-    with open(champion_json_path, "r") as f:
+    with open(champion_json_path, "r", encoding="utf-8") as f:
         champion_json = json.load(f)
 
     tags_set = set()
@@ -48,11 +48,12 @@ def champion_class_transform(dataframe):
         tags_set.update(set(champion_json["data"][x]["tags"]))
     tags = list(tags_set)
     
+    df = df.copy()
     for tag in tags:
-        dataframe[tag] = dataframe["champion"].apply(lambda k: _is_class(tag, champion_json["data"][_clean(k)]["tags"]))
+        df.loc[:, tag] = df["champion"].apply(lambda k: _is_class(tag, champion_json["data"][_clean(k)]["tags"]))
     
-    dataframe = dataframe.drop(columns=["champion"])
-    return dataframe
+    df = df.drop(columns=["champion"])
+    return df
 
 def smart_drop_na(df, column_percentage_threshold=0.2, row_percentage_threshold=0):
     missing_values = df.isna().mean()
