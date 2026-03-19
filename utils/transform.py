@@ -57,7 +57,7 @@ def champion_class_transform(df):
 
 def smart_drop_na(df, column_percentage_threshold=0.2, row_percentage_threshold=0):
     missing_values = df.isna().mean()
-    missing_value_columns = missing_values[missing_values > len(df) * column_percentage_threshold].index
+    missing_value_columns = missing_values[missing_values > column_percentage_threshold].index
     df = df.drop(columns=missing_value_columns)
 
     z = df.isna().sum(axis=1)
