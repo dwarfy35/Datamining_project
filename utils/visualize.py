@@ -47,3 +47,27 @@ def plot_outlier_distribution(df, column, title_suffix=""):
     plt.title(f'Distribution of {column} {title_suffix} (Outliers Highlighted)')
     plt.legend()
     plt.show()
+
+
+def plot_adj_matrix_sorted_by_clustering(adj_matrix, clustering):
+    num_clusters = clustering.max() + 1
+    print(num_clusters)
+
+    sorted_indicies = []
+
+    cluster_delimiters = [0]
+
+    for cluster_id in range(num_clusters):
+        cluster_indices = np.where(clustering == cluster_id)[0]
+        sorted_indicies.extend(cluster_indices)
+        cluster_delimiters.append(len(sorted_indicies))
+        
+        print(f"Cluster {cluster_id}: {len(cluster_indices)} players")
+
+    sorted_adj_matrix = adj_matrix[sorted_indicies, :][:, sorted_indicies]
+    plt.matshow(sorted_adj_matrix)
+
+    for delimiter in cluster_delimiters:
+        plt.plot([0, len(sorted_adj_matrix)], [delimiter, delimiter], color="red")
+        plt.plot([delimiter, delimiter], [0, len(sorted_adj_matrix)], color="red")
+    plt.show()
