@@ -71,3 +71,20 @@ def plot_adj_matrix_sorted_by_clustering(adj_matrix, clustering):
         plt.plot([0, len(sorted_adj_matrix)], [delimiter, delimiter], color="red")
         plt.plot([delimiter, delimiter], [0, len(sorted_adj_matrix)], color="red")
     plt.show()
+
+
+from .constants import league_to_region_dict
+
+
+def count_cluster_regions(cluster_labels, uniq_player_ids, data):
+    num_clusters = cluster_labels.max() + 1
+    for i in range(num_clusters):
+        region_count = dict.fromkeys(set(league_to_region_dict.values()), 0)
+        for playerid in uniq_player_ids[cluster_labels == i]:
+            leagues = data[data["playerid"] == playerid]["league"].unique()
+            for league in leagues:
+                region = league_to_region_dict[league]
+                region_count[region] += 1
+        print(i)
+        print(region_count)
+        print("__")
