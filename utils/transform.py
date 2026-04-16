@@ -1,6 +1,9 @@
 import json
 import pandas as pd
 from pathlib import Path
+from gensim.models import Word2Vec
+from tqdm import tqdm
+import numpy as np
 
 
 def _is_class(k, p):
@@ -99,3 +102,26 @@ def aggregate_stats(df, id_col):
     res_quant.columns = [f"{c[0]}_q{int(c[1]*100)}" for c in res_quant.columns]
     
     return pd.concat([res_mean, res_var, res_quant], axis=1).reset_index()
+
+
+
+random_walk_length = 100
+random_walks = []
+random_walks_count = 1000
+jump_prob = 0.2
+
+
+def random_walk_embeddings(uniq_player_ids, adj_matrix, random_walk_length=100, random_walks_count=1000, jump_prob=0.2):
+    for r in tqdm(range(random_walks_count)):
+        
+        start = int(len(uniq_player_ids) * np.random.rand())    
+        random_walk = [uniq_player_ids[start]]
+
+        for i in range(random_walk_length):
+            if np.random.rand() > jump_prob:
+                jump = np.random.choice(uniq_player_ids, p=adj_matrix[start]/sum(adj_matrix[start]))
+            else:
+                jump = uniq_player_ids[int(len(uniq_player_ids) * np.random.rand())]
+            random_walk.append(jump)
+    #pd.DataFrame(random_walk).value_counts()
+        random_walks.append(random_walk)
