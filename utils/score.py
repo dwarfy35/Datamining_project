@@ -47,3 +47,24 @@ def score_leagues(labels_pred, uniq_player_ids, data, score_fn):
 
 
 
+from sklearn.metrics import normalized_mutual_info_score
+from sklearn.metrics import adjusted_rand_score # ari
+from sklearn.metrics import silhouette_score
+
+def compute_all_metrics(clustering, uniq_player_ids, data):
+    score_fn = normalized_mutual_info_score
+    nmi_regions = score_regions(clustering, uniq_player_ids, data, score_fn)
+    nmi_continents = score_continents(clustering, uniq_player_ids, data, score_fn)
+    nmi_leagues = score_leagues(clustering, uniq_player_ids, data, score_fn)
+    score_fn = adjusted_rand_score
+    ari_regions = score_regions(clustering, uniq_player_ids, data, score_fn)
+    ari_continents = score_continents(clustering, uniq_player_ids, data, score_fn)
+    ari_leagues = score_leagues(clustering, uniq_player_ids, data, score_fn)
+    return {
+        "nmi_leagues": nmi_leagues,
+        "nmi_regions": nmi_regions,
+        "nmi_continents": nmi_continents,
+        "ari_leagues": ari_leagues,
+        "ari_regions": ari_regions,
+        "ari_continents": ari_continents,
+    }

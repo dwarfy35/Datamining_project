@@ -49,9 +49,12 @@ def plot_outlier_distribution(df, column, title_suffix=""):
     plt.show()
 
 
-def plot_adj_matrix_sorted_by_clustering(adj_matrix, clustering):
+def plot_adj_matrix_sorted_by_clustering(adj_matrix, clustering, ax=None):
+    if ax is None:
+        ax = plt.gca()
+
     num_clusters = clustering.max() + 1
-    print(num_clusters)
+    #print(num_clusters)
 
     sorted_indicies = []
 
@@ -62,16 +65,23 @@ def plot_adj_matrix_sorted_by_clustering(adj_matrix, clustering):
         sorted_indicies.extend(cluster_indices)
         cluster_delimiters.append(len(sorted_indicies))
         
-        print(f"Cluster {cluster_id}: {len(cluster_indices)} players")
+        #print(f"Cluster {cluster_id}: {len(cluster_indices)} players")
 
     sorted_adj_matrix = adj_matrix[sorted_indicies, :][:, sorted_indicies]
-    plt.matshow(sorted_adj_matrix)
+    ax.matshow(sorted_adj_matrix)
 
-    for delimiter in cluster_delimiters:
-        plt.plot([0, len(sorted_adj_matrix)], [delimiter, delimiter], color="red")
-        plt.plot([delimiter, delimiter], [0, len(sorted_adj_matrix)], color="red")
-    plt.show()
+    #for delimiter in cluster_delimiters:
+    #    ax.plot([0, len(sorted_adj_matrix)], [delimiter, delimiter], color="red")
+    #    ax.plot([delimiter, delimiter], [0, len(sorted_adj_matrix)], color="red")
 
+    #Instead of full lines, just box the clusters in the adj matrix
+    for i in range(num_clusters):
+        start = cluster_delimiters[i]
+        end = cluster_delimiters[i+1]
+        ax.plot([start, end-1, end-1, start, start], [start, start, end-1, end-1, start], color="red")
+
+    # Rendering now handled outside the function
+    #plt.show()
 
 from .constants import league_to_region_dict
 
