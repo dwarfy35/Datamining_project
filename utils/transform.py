@@ -1,7 +1,6 @@
 import json
 import pandas as pd
 from pathlib import Path
-from gensim.models import Word2Vec
 from tqdm import tqdm
 import numpy as np
 
@@ -50,6 +49,7 @@ def champion_class_transform(df):
     for x in champion_json["data"].keys():
         tags_set.update(set(champion_json["data"][x]["tags"]))
     tags = list(tags_set)
+    print(tags)
     
     df = df.copy()
     for tag in tags:
@@ -57,6 +57,26 @@ def champion_class_transform(df):
     
     df = df.drop(columns=["champion"])
     return df
+
+champion_json_path = Path(__file__).parent / "champion.json"
+with open(champion_json_path, "r", encoding="utf-8") as f:
+    champion_json = json.load(f)
+
+def champion_to_tags(champion_name):
+    return champion_json["data"][_clean(champion_name)]["tags"]
+
+champion_better_tags_json_path = Path(__file__).parent / "champion_better_tags.json"
+with open(champion_better_tags_json_path, "r", encoding="utf-8") as f:
+    champion_better_tags_json = json.load(f)
+
+def champion_to_better_tags(champion_name):
+    # champion_better_tags_json is a dict from tags to list of champions
+    #champion_name = _clean(champion_name)
+    for tag, champions in champion_better_tags_json.items():
+        if champion_name in champions:
+            return tag
+    raise ValueError(f"Champion {champion_name} not found in champion_better_tags_json")
+
 
 def smart_drop_na(df, column_percentage_threshold=0.2, row_percentage_threshold=0):
     missing_values = df.isna().mean()
