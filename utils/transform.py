@@ -113,15 +113,32 @@ def scale_df(df, time_dependent_cols=time_dependent_cols, model=simple_scale_mod
 def aggregate_stats(df, id_col):
     df = df[df.groupby(id_col)[id_col].transform('count') > 2]
     
-    g = df.groupby(id_col)
+    no_position_columns = [col for col in df.columns if col != "position"]
+    g = df[no_position_columns].groupby(id_col)
+
+    res_mode = df.groupby(id_col)["position"].agg(lambda x: x.mode()[0]).to_dict()
+    
+    # g[]
+    #g_no_position = g[[col for col in df.columns if col != "position"]]
+    #print(g_no_position)
+    #print(g.to_dict())
     
     res_mean = g.mean().add_suffix('_mean')
     res_var = g.var().add_suffix('_var')
     res_quant = g.quantile([0.25, 0.5, 0.75]).unstack()
-    
+    #res_position = g["position"].agg(lambda x: x.mode()[0])
     res_quant.columns = [f"{c[0]}_q{int(c[1]*100)}" for c in res_quant.columns]
+
+    # Do a series with res_mean.index as index and res_mode as values, with name "position"
+    res_position = pd.Series(dict(zip(res_mean.index, res_mean.index.map(res_mode))))
+    res_position.name = "position"
+    #res_position = res_mean.index, res_mean.index.map(res_mode).to_series(name="position")
+    #res_position = g[id_col].map(res_mode)
+    print(res_mean)
+    print(res_position)
+
     
-    return pd.concat([res_mean, res_var, res_quant], axis=1).reset_index()
+    return pd.concat([res_mean, res_var, res_quant, res_position], axis=1).reset_index()
 
 
 
