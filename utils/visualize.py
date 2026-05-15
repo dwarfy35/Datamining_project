@@ -98,3 +98,60 @@ def count_cluster_regions(cluster_labels, uniq_player_ids, data):
         print(i)
         print(region_count)
         print("__")
+
+
+def plot_optics_reachability_and_results(optics_reachability, champs_2d_tsne, champs_cluster_labels, champs, eps=None):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+
+    ax1.plot(optics_reachability)
+    if eps is not None:
+        ax1.axhline(y=eps, color='r', linestyle='--')
+    ax1.set_title("OPTICS Reachability Plot")
+    ax1.set_xlabel("Points in the order they were processed")
+    ax1.set_ylabel("Reachability Distance")
+
+    scatter = ax2.scatter(champs_2d_tsne[:, 0], champs_2d_tsne[:, 1], c=champs_cluster_labels)
+    for i, champ in enumerate(champs.index):
+        ax2.annotate(champ, (champs_2d_tsne[i, 0], champs_2d_tsne[i, 1]))
+    ax2.set_title("t-SNE of Champions (OPTICS clusters)")
+    plt.colorbar(scatter, ax=ax2, label="Cluster")
+
+    n_clusters = len(set(champs_cluster_labels)) - (1 if -1 in champs_cluster_labels else 0)
+    fig.suptitle(f"OPTICS Clustering: {n_clusters} clusters found", fontsize=14)
+
+    plt.tight_layout()
+    plt.show()
+
+# Improved version which shows the clusters in the reachability plot as well for the Xi method, currently fails to count the clusters right and use consistent colors
+# def plot_optics_reachability_and_results_v2(optics, optics_reachability, champs_2d_tsne, champs_cluster_labels, champs, eps=None):
+#     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+
+#     ax1.plot(optics_reachability, color='black', linewidth=0.8)
+
+#     if eps is not None:
+#         # DBSCAN method: show horizontal eps line
+#         ax1.axhline(y=eps, color='r', linestyle='--', label=f'eps={eps}')
+#         ax1.legend()
+#     elif hasattr(optics, 'cluster_hierarchy_') and optics.cluster_hierarchy_ is not None:
+#         # Xi method: shade each cluster's valley using cluster_hierarchy_
+#         n_clusters = len(set(champs_cluster_labels)) - (1 if -1 in champs_cluster_labels else 0)
+#         cmap = plt.get_cmap('tab10', n_clusters)
+#         for cluster_id, (start, end) in enumerate(optics.cluster_hierarchy_[:, :2].astype(int)):
+#             ax1.axvspan(start, end, alpha=0.3, color=cmap(cluster_id), label=f'Cluster {cluster_id}')
+#         ax1.legend(fontsize=7, loc='upper right')
+
+#     ax1.set_title("OPTICS Reachability Plot")
+#     ax1.set_xlabel("Points in the order they were processed")
+#     ax1.set_ylabel("Reachability Distance")
+
+#     scatter = ax2.scatter(champs_2d_tsne[:, 0], champs_2d_tsne[:, 1], c=champs_cluster_labels)
+#     for i, champ in enumerate(champs.index):
+#         ax2.annotate(champ, (champs_2d_tsne[i, 0], champs_2d_tsne[i, 1]))
+#     ax2.set_title("t-SNE of Champions (OPTICS clusters)")
+#     plt.colorbar(scatter, ax=ax2, label="Cluster")
+
+#     n_clusters = len(set(champs_cluster_labels)) - (1 if -1 in champs_cluster_labels else 0)
+#     fig.suptitle(f"OPTICS Clustering: {n_clusters} clusters found", fontsize=14)
+
+#     plt.tight_layout()
+#     plt.show()
