@@ -136,8 +136,9 @@ def aggregate_stats(df, id_col):
     res_position.name = "position"
     #res_position = res_mean.index, res_mean.index.map(res_mode).to_series(name="position")
     #res_position = g[id_col].map(res_mode)
-    print(res_mean)
-    print(res_position)
+
+    # print(res_mean)
+    # print(res_position)
 
     
     return pd.concat([res_mean, res_var, res_quant, res_position], axis=1).reset_index()
