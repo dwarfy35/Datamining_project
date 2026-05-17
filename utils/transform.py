@@ -103,8 +103,10 @@ def scale_df(df, time_dependent_cols=time_dependent_cols, model=simple_scale_mod
 
     for col in df.columns:
         if col not in time_dependent_cols:
+            print(f"col: {col}")
             df_residuals[col] = df[col]
             continue
+
         model.fit(df[['gamelength']], df[col])
         df_residuals[col] = df[col] - model.predict(df[['gamelength']])
     

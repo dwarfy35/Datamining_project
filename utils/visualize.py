@@ -1,6 +1,6 @@
 def cluster_summary(df, cluster_col='cluster_label', feature_cols=None):
     if feature_cols is None:
-        feature_cols = df.columns.difference([cluster_col, 'gameid', 'teamname', 'result'])
+        feature_cols = df.columns.difference([cluster_col, 'gameid', 'teamid', 'result'])
     
     cluster_profiles = df.groupby(cluster_col)[feature_cols].mean()
     overall_mean = df[feature_cols].mean()
